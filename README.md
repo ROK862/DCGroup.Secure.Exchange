@@ -1,29 +1,30 @@
 [![Build Status](https://travis-ci.org/migueldeicaza/TensorFlowSharp.svg?branch=master)](https://travis-ci.org/migueldeicaza/TensorFlowSharp)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/TensorFlowSharp)
 
-# When to use TensorFlowSharp
+# When to use Secure-Exchange
 
-TensorFlowSharp is a good runtime to run your existing models, and is mostly
-a straight binding to the underlying TensorFlow runtime.   Most people will
-want to use a higher-level library for interfacing with TensorFlow.
+Secure-Exchange is a good runtime to qoury agaist Business Central "SOAP"--web services, 
+and is mostly a simplified version of the general perpos XML request. Herein, the general
+Purpus XML request are replaced with simple JSON syntex to enable ease of use. That is, 
+The entire process for querying the webservice is abstracted away and simplified by secure
+exchange. I believe most people will want to use a higher-level library for interfacing with 
+Business Central.
 
-The library was designed to blend in the .NET ecosystem and use the
-.NET naming conventions.
+The library was designed to blend in the .NET ecosystem and Node.js.
 
 I strongly recommend that you use
-[TensorFlow.NET](https://github.com/SciSharp/TensorFlow.NET) which
-takes a different approach than TensorFlowSharp, it uses the Python
-naming convention and has a much broader support for the higher level
-operations that you are likely to need - and is also actively maintained.
+[Secure-Exchange v.2.0](#) which
+takes a different approach than the standard secure exchange used throughout the organization.
 
 
-# TensorFlowSharp
+# Secure-Exchange v.2.0
 
-TensorFlowSharp are .NET bindings to the TensorFlow library published here:
+Secure-Exchange v.2.0 libraries are .NET bindings to the Node.js library:
 
-https://github.com/tensorflow/tensorflow
-
-This surfaces the C API as a strongly-typed .NET API for use from C# and F#.
+The core of the extension was written in C#--and handles low-level tasks such as
+authentication (NTLM), transcribing between ERP systems, modularized qurty handling, 
+and most importantly serves as an abstruction which reduces the complexity in querying 
+against business central.
 
 The API surfaces the entire low-level TensorFlow API, it is on par with other
 language bindings.  But currently does not include a high-level API like

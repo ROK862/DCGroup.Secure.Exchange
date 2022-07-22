@@ -5,6 +5,10 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { config: env_config } = require("dotenv");
+const SEToken = bcrypt.hashSync(
+  `${process.env.API_USR}:${process.env.API_PASS}`,
+  8
+);
 
 // We need to use the environment variables...so, lets call the config function.
 env_config();
@@ -26,10 +30,7 @@ const get_module = async ({ module_name, comp_id, filters }) => {
     mode: "cors",
     cache: "no-cache",
     headers: {
-      "Secure-Exchange": bcrypt.hashSync(
-        `${process.env.API_USR}:${process.env.API_PASS}`,
-        8
-      ),
+      "Secure-Exchange": SEToken,
       "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": "*",
       Accept: "application/json",
@@ -42,10 +43,6 @@ const get_module = async ({ module_name, comp_id, filters }) => {
     agent: httpsAgent,
   };
 
-  console.log({
-    queryDestination: `${process.env.API_EXCHANGE_SERVER}:${process.env.API_PORT}/api/v2.0/secure/exchange/modules`,
-    queryObject: raw,
-  });
   return await fetch(
     `${process.env.API_EXCHANGE_SERVER}:${process.env.API_PORT}/api/v2.0/secure/exchange/modules`,
     requestOptions

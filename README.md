@@ -150,7 +150,7 @@ curl_close($curl);
 echo $response;
 ```
 
-# Sample Response: Value Entries
+# Sample Response: 143 - Posted Sales Invoices
 
 ```json
 {

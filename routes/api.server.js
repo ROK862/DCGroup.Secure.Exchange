@@ -5,14 +5,12 @@ const bcrypt = require("bcrypt");
 
 // Authentication object.
 // Please keep this information in a secure location, IE: .env file.
-
+// The alternative to this is to add a bcrypt hash of "User:Pass" as a "Secure-Exchange" request header.
+// Much more secure.
 const accessObject = {
   account: process.env.API_USER,
   secret: process.env.API_PASS,
 };
-
-// The alternative to this is to add a btcryptjs hash of "User:Pass" as a "Secure-Exchange" request header.
-// Much more secure.
 
 const get_module = async ({ module_name, comp_id, filters }) => {
   const myHeaders = new fetch.Headers();
@@ -46,6 +44,10 @@ const get_module = async ({ module_name, comp_id, filters }) => {
     .catch((error) => console.log("error", error));
 };
 
+// This is perhaps the most important part of the code.
+// Here, we are creating a sample request to business central using the
+// secure exchange middle ware.
+// The get module function will do the heavy lifting.
 const sample_request = async () => {
   const module = "Value Entries";
   const filters = [];

@@ -1,17 +1,26 @@
 const fetch = require("node-fetch");
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 
 // Authentication object.
 // Please keep this information in a secure location, IE: .env file.
+
 const accessObject = {
   account: process.env.API_USER,
   secret: process.env.API_PASS,
 };
 
+// The alternative to this is to add a btcryptjs hash of "User:Pass" as a "Secure-Exchange" request header.
+// Much more secure.
+
 const get_module = async ({ module_name, comp_id, filters }) => {
   const myHeaders = new fetch.Headers();
   myHeaders.append("Content-Type", "application/json");
+  myHeaders.append(
+    "Secure-Exchange",
+    bcrypt.hashSync(`${process.env.API_USER}:${process.env.API_PASS}`, 8)
+  );
 
   const raw = JSON.stringify({ accessObject, module_name, comp_id, filters });
 

@@ -1,4 +1,6 @@
 const fetch = require("node-fetch");
+const https = require("https");
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
@@ -12,43 +14,43 @@ env_config();
 // The alternative to this is to add a bcrypt hash of "User:Pass" as a "Secure-Exchange" request header.
 // Much more secure.
 const accessObject = {
-  account: process.env.API_USER,
+  account: process.env.API_USR,
   secret: process.env.API_PASS,
 };
 
 const get_module = async ({ module_name, comp_id, filters }) => {
-  const myHeaders = new fetch.Headers();
-  myHeaders.append("Content-Type", "application/json");
-  myHeaders.append(
-    "Secure-Exchange",
-    bcrypt.hashSync(`${process.env.API_USER}:${process.env.API_PASS}`, 8)
-  );
-
-  const raw = JSON.stringify({ accessObject, module_name, comp_id, filters });
+  const raw = JSON.stringify({ module_name, comp_id, filters });
 
   const requestOptions = {
     method: "POST",
     mode: "cors",
     cache: "no-cache",
     headers: {
+      "Secure-Exchange": bcrypt.hashSync(
+        `${process.env.API_USR}:${process.env.API_PASS}`,
+        8
+      ),
       "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": "*",
       Accept: "application/json",
       Authorization: "*",
     },
-    body: JSON.stringify(raw),
+    body: raw,
     redirect: "follow",
+    // This is to counter a port specific certificate bug on the exchange server.
+    // we will communucate when this can be removed.
+    agent: httpsAgent,
   };
 
   console.log({
     queryDestination: `${process.env.API_EXCHANGE_SERVER}:${process.env.API_PORT}/api/v2.0/secure/exchange/modules`,
+    queryObject: raw,
   });
   return await fetch(
     `${process.env.API_EXCHANGE_SERVER}:${process.env.API_PORT}/api/v2.0/secure/exchange/modules`,
     requestOptions
   )
-    .then((response) => response.json())
-    .then((result) => result)
+    .then((res) => res.json())
     .catch((error) => console.log("error", error));
 };
 

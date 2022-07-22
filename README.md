@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/migueldeicaza/TensorFlowSharp.svg?branch=master)](https://travis-ci.org/migueldeicaza/TensorFlowSharp)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/TensorFlowSharp)
 
-# When to use Secure-Exchange
+# When to use Secure-Exchange - Business Central Middleware.
 
 Secure-Exchange is a good runtime to query against Business Central "SOAP"--web services 
 and is mostly a simplified version of the general purpose XML request. Herein, the general

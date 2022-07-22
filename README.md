@@ -3,18 +3,17 @@
 
 # When to use Secure-Exchange
 
-Secure-Exchange is a good runtime to qoury agaist Business Central "SOAP"--web services, 
-and is mostly a simplified version of the general perpos XML request. Herein, the general
-Purpus XML request are replaced with simple JSON syntex to enable ease of use. That is, 
-The entire process for querying the webservice is abstracted away and simplified by secure
+Secure-Exchange is a good runtime to query against Business Central "SOAP"--web services 
+and is mostly a simplified version of the general purpose XML request. Herein, the general
+Purpose XML requests are replaced with simple JSON syntax to enable ease of use. That is, 
+The entire process for querying the web service is abstracted away and simplified by the secure
 exchange. I believe most people will want to use a higher-level library for interfacing with 
-Business Central.
+Business Central (BC) and Hansa World (HW). 
 
-The library was designed to blend in the .NET ecosystem and Node.js.
+The library was designed to blend in the .NET ecosystem with Node.js.
 
 I strongly recommend that you use
-[Secure-Exchange v.2.0](#) which
-takes a different approach than the standard secure exchange used throughout the organization.
+[Secure-Exchange v.2.0](#) which takes a different approach than the standard secure exchange used throughout the organization.
 
 
 # Secure-Exchange v.2.0
@@ -22,228 +21,132 @@ takes a different approach than the standard secure exchange used throughout the
 Secure-Exchange v.2.0 libraries are .NET bindings to the Node.js library:
 
 The core of the extension was written in C#--and handles low-level tasks such as
-authentication (NTLM), transcribing between ERP systems, modularized qurty handling, 
-and most importantly serves as an abstruction which reduces the complexity in querying 
-against business central.
+authentication (NTLM BC/OAUTH HW), transcribing between ERP systems, modularized query handling, 
+and most importantly serves as an abstraction that reduces the complexity of querying 
+against Business Central / Hansa World.
 
-The API surfaces the entire low-level TensorFlow API, it is on par with other
-language bindings.  But currently does not include a high-level API like
-the Python binding does, so it is more cumbersome to use for those high level
-operations.
+The API surfaces the entire low-level .NET API, it is on par with other
+language bindings.  Bridging between the high-level abstraction and your
+preferred language can be done with simple JSON interfacing as illustrated
+below. Also, I have included a few variations to illustrate cross integration
+across dev-ops.
 
-You can prototype using TensorFlow or Keras in Python, then save your graphs
-or trained models and then load the result in .NET with TensorFlowSharp and
-feed your own data to train or run.
+# JavaScript Node.js with btcryptjs
 
-The [current API
-documentation](https://migueldeicaza.github.io/TensorFlowSharp/) is here.
+```javascript
+const server = “…”;
+const port = “…”;
+const myHeaders = new Headers();
+myHeaders.append("Secure-Exchange", "…"); // btcrypt hash “user:pass”
+myHeaders.append("Content-Type", "application/json");
 
-# Using TensorFlowSharp
+var raw = JSON.stringify({
+  "limit": "10", // Limit defines the maximum record count.
+  "module_name": "Posted Sales Invoices", // Web Service you want to query.
+  "comp_id": 24, // In system company number.
+  "filters": [ // Filters are defined with a key-value pair, although in this case, in a sequential array.
+    [ 
+      "No", // Whats the first filter key?
+      "156620..156620" // Whats the first filter value? Notice it’s a range between 156620 and 156620
+    ],
+    [
+      "Due_Date",
+      "2022-08-31"
+    ]
+  ]
+});
 
-## Installation 
-
-The easiest way to get started is to use the NuGet package for 
-TensorFlowSharp which contains both the .NET API as well as the 
-native libraries for 64-bit Linux, Mac and Windows using the CPU backend.
-
-You can install using NuGet like this:
-
-```cmd
-nuget install TensorFlowSharp
-```
-
-Or select it from the NuGet packages UI on Visual Studio.
-
-On Visual Studio, make sure that you are targeting .NET 4.6.1 or
-later, as this package uses some features of newer .NETs.  Otherwise,
-the package will not be added. Once you do this, you can just use the
-TensorFlowSharp nuget
-
-Alternatively, you can [download it](https://www.nuget.org/packages/TensorFlowSharp/) directly.
-
-## Using TensorFlowSharp
-
-Your best source of information right now are the SampleTest that
-exercises various APIs of TensorFlowSharp, or the stand-alone samples
-located in "Examples".
-
-This API binding is closer design-wise to the Java and Go bindings
-which use explicit TensorFlow graphs and sessions.  Your application
-will typically create a graph (TFGraph) and setup the operations
-there, then create a session from it (TFSession), then use the session
-runner to setup inputs and outputs and execute the pipeline.
-
-Something like this:
-
-```csharp
-using (var graph = new TFGraph ())
-{
-    // Load the model
-    graph.Import (File.ReadAllBytes ("MySavedModel"));
-    using (var session = new TFSession (graph))
-    {
-        // Setup the runner
-        var runner = session.GetRunner ();
-        runner.AddInput (graph ["input"] [0], tensor);
-        runner.Fetch (graph ["output"] [0]);
-
-        // Run the model
-        var output = runner.Run ();
-
-        // Fetch the results from output:
-        TFTensor result = output [0];
-    }
-}
-```
-
-If your application is sensitive to GC cycles, you can run your model as follows.
-The `Run` method will then allocate managed memory only at the first call and reuse it later on.
-Note that this requires you to reuse the `Runner` instance and not to change the shape of the input data:
-
-```csharp
-// Some input matrices
-var inputs = new float[][,] {
-    new float[,] { { 1, 2 }, { 3, 4 } },
-    new float[,] { { 2, 4 }, { 6, 8 } }
+var requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: raw,
+  redirect: 'follow'
 };
 
-// Assumes all input matrices have identical shape
-var shape = new long[] { inputs[0].GetLongLength(0), inputs[0].GetLongLength(1) };
-var size = inputs[0].Length * sizeof(float);
-
-// Empty input and output tensors
-var input = new TFTensor(TFDataType.Float, shape, size);
-var output = new TFTensor[1];
-
-// Result array for a single run
-var result = new float[1, 1];
-
-using (var graph = new TFGraph())
-{
-    // Load the model
-    graph.Import(File.ReadAllBytes("MySavedModel"));
-    using (var session = new TFSession(graph))
-    {
-        // Setup the runner
-        var runner = session.GetRunner();
-        runner.AddInput(graph["input"][0], input);
-        runner.Fetch(graph["output"][0]);
-
-        // Run the model on each input matrix
-        for (int i = 0; i < inputs.Length; i++)
-        {
-            // Mutate the input tensor
-            input.SetValue(inputs[i]);
-
-            // Run the model
-            runner.Run(output);
-
-            // Fetch the result from output into `result`
-            output[0].GetValue(result);
-        }
-    }
-}
+fetch(`${server}:${port}/api/v2.0/secure/exchange/modules", requestOptions)
+  .then(response => response.text())
+  .then(result => console.log(result))
+  .catch(error => console.log('error', error));
 ```
 
-In scenarios where you do not need to setup the graph independently,
-the session will create one for you.  The following example shows how
-to abuse TensorFlow to compute the addition of two numbers:
-
+# CSharp (.NET)
 ```csharp
-using (var session = new TFSession())
-{
-    var graph = session.Graph;
+var client = new RestClient(SERVER+”:”+PORT+”/api/v2.0/secure/exchange/modules");
+client.Timeout = -1;
+var request = new RestRequest(Method.POST);
+request.AddHeader("Secure-Exchange", HASH);
+request.AddHeader("Content-Type", "application/json");
+var body = @"{
+" + "\n" +
+@"    ""limit"": ""10"",
+" + "\n" +
+@"    ""module_name"": ""Posted Sales Invoices"",
+" + "\n" +
+@"    ""comp_id"": 24,
+" + "\n" +
+@"    ""filters"": [
+" + "\n" +
+@"        [
+" + "\n" +
+@"            ""No"",
+" + "\n" +
+@"            ""156620..156620""
+" + "\n" +
+@"        ],[
+" + "\n" +
+@"            ""Due_Date"",
+" + "\n" +
+@"            ""2022-08-31""
+" + "\n" +
+@"        ]
+" + "\n" +
+@"    ]
+" + "\n" +
+@"}";
+request.AddParameter("application/json", body,  ParameterType.RequestBody);
+IRestResponse response = client.Execute(request);
+Console.WriteLine(response.Content);
+```
+#
+```php
+<?php
 
-    var a = graph.Const(2);
-    var b = graph.Const(3);
-    Console.WriteLine("a=2 b=3");
+$curl = curl_init();
 
-    // Add two constants
-    var addingResults = session.GetRunner().Run(graph.Add(a, b));
-    var addingResultValue = addingResults.GetValue();
-    Console.WriteLine("a+b={0}", addingResultValue);
+curl_setopt_array($curl, array(
+  CURLOPT_URL => '{SERVER}:{PORT}/api/v2.0/secure/exchange/modules',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'POST',
+  CURLOPT_POSTFIELDS =>'{
+    "limit": "10",
+    "module_name": "Posted Sales Invoices",
+    "comp_id": 24,
+    "filters": [
+        [
+            "No",
+            "156620..156620"
+        ],[
+            "Due_Date",
+            "2022-08-31"
+        ]
+    ]
+}',
+  CURLOPT_HTTPHEADER => array(
+    'Secure-Exchange: {HASH} ',
+    'Content-Type: application/json'
+  ),
+));
 
-    // Multiply two constants
-    var multiplyResults = session.GetRunner().Run(graph.Mul(a, b));
-    var multiplyResultValue = multiplyResults.GetValue();
-    Console.WriteLine("a*b={0}", multiplyResultValue);
-}
+$response = curl_exec($curl);
+
+curl_close($curl);
+echo $response;
 ```
 
-Here is an F# scripting version of the same example, you can use this in F# Interactive:
 
-```fsharp
-#r @"packages\TensorFlowSharp.1.4.0\lib\net471\TensorFlowSharp.dll"
 
-open System
-open System.IO
-open TensorFlow
-
-// set the path to find the native DLL
-Environment.SetEnvironmentVariable("Path", 
-    Environment.GetEnvironmentVariable("Path") + ";" + __SOURCE_DIRECTORY__ + @"/packages/TensorFlowSharp.1.2.2/native")
-
-module AddTwoNumbers = 
-    let session = new TFSession()
-    let graph = session.Graph
-
-    let a = graph.Const(new TFTensor(2))
-    let b = graph.Const(new TFTensor(3))
-    Console.WriteLine("a=2 b=3")
-
-    // Add two constants
-    let addingResults = session.GetRunner().Run(graph.Add(a, b))
-    let addingResultValue = addingResults.GetValue()
-    Console.WriteLine("a+b={0}", addingResultValue)
-
-    // Multiply two constants
-    let multiplyResults = session.GetRunner().Run(graph.Mul(a, b))
-    let multiplyResultValue = multiplyResults.GetValue()
-    Console.WriteLine("a*b={0}", multiplyResultValue)
-```
-
-# Working on TensorFlowSharp 
-
-If you want to work on extending TensorFlowSharp or contribute to its development
-read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-Please keep in mind that this requires a modern version of C# as this uses some
-new capabilities there.   So you will want to use Visual Studio 2017.
-
-## Possible Contributions
-
-### Build More Tests
-
-Would love to have more tests to ensure the proper operation of the framework.
-
-### Samples
-
-The binding is pretty much complete, and at this point, I want to improve the 
-API to be easier and more pleasant to use from both C# and F#.   Creating
-samples that use Tensorflow is a good way of finding easy wins on the usability
-of the API, there are some here:
-
-https://github.com/tensorflow/models
-
-### Packaging
-
-Mobile: we need to package the library for consumption on Android and iOS.
-
-### Documentation Styling
-
-The API documentation has not been styled, I am using the barebones template
-for documentation, and it can use some work.
-
-### Issues
-
-I have logged some usability problems and bugs in Issues, feel free to take
-on one of those tasks.
-
-## Documentation
-
-Much of the online documentation comes from TensorFlow and is licensed under
-the terms of Apache 2 License, in particular all the generated documentation
-for the various operations that is generated by using the tensorflow reflection
-APIs.
-
-Last API update: Release 1.9

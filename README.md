@@ -155,7 +155,7 @@ echo $response;
 ```json
 {
   "status": 200,
-  "user": "Imperial",
+  "user": "hidden for security",
   "requestTimestamp": "Fri Jul 22 2022 14:59:06 GMT+0200 (Central Africa Time)",
   "module": "143 - Posted Sales Invoices",
   "records": [

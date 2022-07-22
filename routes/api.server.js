@@ -2,6 +2,10 @@ const fetch = require("node-fetch");
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const { config: env_config } = require("dotenv");
+
+// We need to use the environment variables...so, lets call the config function.
+env_config();
 
 // Authentication object.
 // Please keep this information in a secure location, IE: .env file.
@@ -35,6 +39,10 @@ const get_module = async ({ module_name, comp_id, filters }) => {
     body: JSON.stringify(raw),
     redirect: "follow",
   };
+
+  console.log({
+    queryDestination: `${process.env.API_EXCHANGE_SERVER}:${process.env.API_PORT}/api/v2.0/secure/exchange/modules`,
+  });
   return await fetch(
     `${process.env.API_EXCHANGE_SERVER}:${process.env.API_PORT}/api/v2.0/secure/exchange/modules`,
     requestOptions
